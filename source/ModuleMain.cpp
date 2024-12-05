@@ -16,11 +16,13 @@ void Clamp(int* value, int minV, int maxV) {
 
 void FrameCallback(FWFrame& Context) {
 	UNREFERENCED_PARAMETER(Context);
-	static bool playerDebug = false;
+
+
+	//Player Noclip
 	static CInstance* ob_player = nullptr;
 	static RValue curX = 0;
 	static RValue curY = 0;
-	if (AurieSuccess(g_int->GetInstanceObject(g_int->CallBuiltin("instance_find", { 56, 0 }).AsReal(), ob_player))) {
+	if (AurieSuccess(g_int->GetInstanceObject(g_int->CallBuiltin("asset_get_index", {"ob_player"}), ob_player))) { //Change it from 52(?), to the object index that its in. This fixes the issues with the Release of Antonblast
 		g_int->GetBuiltin("x", ob_player, NULL_INDEX, curX);
 		g_int->GetBuiltin("y", ob_player, NULL_INDEX, curY);
 
@@ -35,8 +37,6 @@ void FrameCallback(FWFrame& Context) {
 		g_int->SetBuiltin("x", ob_player, NULL_INDEX, curX);
 		g_int->SetBuiltin("y", ob_player, NULL_INDEX, curY);
 	}
-
-
 
 
 	// Going to a target room
