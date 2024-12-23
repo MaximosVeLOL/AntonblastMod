@@ -14,15 +14,33 @@ void Clamp(int* value, int minV, int maxV) {
 	}
 }
 
+#define DEBUG_ENABLED false
+
+/* Notes
+	-3 is the "all" keyword in gml
+	-1 is the "noone" keyword in gml
+	RValues are everything
+
+*/
+
+void GetAllObjects() { //A debug feature that I used to trobuleshoot the "No Noclip!" issue.
+	for (int i = 0; i < g_int->CallBuiltin("instance_number", { -3 }).AsReal(); i++) {
+		CInstance* Character;
+		g_int->GetInstanceObject( int32_t(g_int->CallBuiltin("instance_find", { -3, i }).AsReal()), Character);
+		RValue Out;
+		g_int->GetBuiltin("object_index", Character, NULL_INDEX, Out);
+		g_int->PrintInfo(g_int->CallBuiltin("object_get_name", { Out }).AsString());
+	}
+	g_int->CallBuiltin("instance_deactivate_all", {});
+}
 void FrameCallback(FWFrame& Context) {
 	UNREFERENCED_PARAMETER(Context);
-
 
 	//Player Noclip
 	static CInstance* ob_player = nullptr;
 	static RValue curX = 0;
 	static RValue curY = 0;
-	if (AurieSuccess(g_int->GetInstanceObject(g_int->CallBuiltin("asset_get_index", {"ob_player"}), ob_player))) { //Change it from 52(?), to the object index that its in. This fixes the issues with the Release of Antonblast
+	if (AurieSuccess(g_int->GetInstanceObject(int32_t(g_int->CallBuiltin("instance_find", { g_int->CallBuiltin("asset_get_index", {"ob_player"}).AsReal(), 0 }).AsReal()), ob_player))) { //I was referencing the player's object index rather than the instance in the current room. This is now fixed.
 		g_int->GetBuiltin("x", ob_player, NULL_INDEX, curX);
 		g_int->GetBuiltin("y", ob_player, NULL_INDEX, curY);
 
@@ -38,7 +56,6 @@ void FrameCallback(FWFrame& Context) {
 		g_int->SetBuiltin("y", ob_player, NULL_INDEX, curY);
 	}
 
-
 	// Going to a target room
 	if (GetAsyncKeyState(VK_CONTROL)) {
 		g_int->CallBuiltin(
@@ -46,8 +63,8 @@ void FrameCallback(FWFrame& Context) {
 			{}
 		);
 		RValue targetRoom = g_int->CallBuiltin("get_string", { "What is the name of the target room?", "" });
-		if (targetRoom.AsString() == "") {
-			targetRoom = "rm_mainMenu";
+		if (targetRoom.AsString() == "" || g_int->CallBuiltin("asset_get_index", {targetRoom}).AsReal() == -1) {
+			return;
 		}
 
 		g_int->CallBuiltin(
@@ -57,33 +74,21 @@ void FrameCallback(FWFrame& Context) {
 				{ targetRoom }
 		)}
 		);
+		RValue Zero = 0;
+		g_int->SetBuiltin("x", ob_player, NULL_INDEX, Zero);
+		g_int->SetBuiltin("y", ob_player, NULL_INDEX, Zero);
 	}
 	// Spawning an object
 	if (GetAsyncKeyState(VK_MENU)) {
 		RValue targetObject = g_int->CallBuiltin("get_string", { "What is the name of the object you want to spawn?", "" });
 		if (targetObject.AsString() == "") {
-			targetObject = "noone";
+			return;
 		}
-		if (g_int->CallBuiltin("instance_exists", { ob_player }).AsBool()) {
-			g_int->CallBuiltin(
-				"instance_create_depth",
-				{ curX, curY, 0,
-					g_int->CallBuiltin(
-					"asset_get_index",
-					{ targetObject }
-			) }
-			);
+		targetObject = g_int->CallBuiltin("asset_get_index", { targetObject.AsString() }).AsReal();
+		if (targetObject.AsReal() != -1 && g_int->CallBuiltin("instance_exists", {ob_player}).AsBool()) {
+			g_int->CallBuiltin("instance_create_depth", { curX, curY, 0, targetObject.AsReal()});
 		}
-		else 		g_int->CallBuiltin(
-			"instance_create_depth",
-			{ 0,0, 0,
-				g_int->CallBuiltin(
-				"asset_get_index",
-				{ targetObject }
-		) }
-		);
 	}
-
 }
 
 EXPORTED AurieStatus ModulePreinitialize(
@@ -112,8 +117,6 @@ EXPORTED AurieStatus ModuleInitialize(
 	);
 
 	if (!AurieSuccess(last_status)) return AURIE_MODULE_DEPENDENCY_NOT_RESOLVED;
-
-	g_int->PrintWarning("Antonblast Mod Created!");
 	g_int->CreateCallback(
 		Module,
 		EVENT_FRAME,

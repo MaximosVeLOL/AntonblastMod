@@ -24,6 +24,7 @@
     <ProjectGuid>{755a11f6-04b7-4e0d-b321-6f567f4769be}</ProjectGuid>
     <RootNamespace>ExamplePlugin</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>AntonMod</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
