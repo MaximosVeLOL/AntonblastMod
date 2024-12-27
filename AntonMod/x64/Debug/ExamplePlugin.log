@@ -1,3 +1,5 @@
 ﻿D:\VisualStudio2022\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(517,5): warning MSB8004: Output Directory does not end with a trailing slash.  This build instance will add the slash as it is required to allow proper evaluation of the Output Directory.
   ModuleMain.cpp
+  LINK : ..\..\Antonblast\mods\Aurie\AntonMod.dll not found or not built by the last incremental link; performing full link
+     Creating library ..\..\Antonblast\mods\Aurie\AntonMod.lib and object ..\..\Antonblast\mods\Aurie\AntonMod.exp
   ExamplePlugin.vcxproj -> D:\SteamLibrary\steamapps\common\Antonblast\mods\Aurie\AntonMod.dll
